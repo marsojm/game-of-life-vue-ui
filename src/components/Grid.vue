@@ -22,7 +22,7 @@
                             <input type="number" class="form-control" id="rowCount" step="1" v-model.number="rows">
                         </div>
                         <div class="error" v-show="rowCountError">
-                            Rows must be between 1 and 50.
+                            Rows must be between 1 and 25.
                         </div>
                     </div>
                     <div class="form-group row">
@@ -31,7 +31,7 @@
                             <input type="number" class="form-control" id="columnCount" step="1" v-model.number="cols">
                         </div>
                         <div class="error" v-show="colCountError">
-                            Cols must be between 1 and 50.
+                            Cols must be between 1 and 25.
                         </div>
                     </div>
                     <div class="form-group row">
@@ -182,13 +182,13 @@ export default {
       rowCountError() {
           return this.rows === undefined 
                 || this.rows < 1 
-                || this.rows > 50;
+                || this.rows > 25;
       },
 
       colCountError() {
           return this.cols === undefined 
                 || this.cols < 1 
-                || this.cols > 50;
+                || this.cols > 25;
       },
 
       inputsAreValid() {
