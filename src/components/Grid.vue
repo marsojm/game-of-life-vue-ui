@@ -11,6 +11,9 @@
                         <div class="col-sm-7">
                             <input type="number" class="form-control" id="alivePercentage" step="0.05" min="0.00" max="1.0" v-model.number="alivePercentage" >
                         </div>
+                        <div class="error" v-show="percentageError">
+                            Alive % must be between 0 and 1.
+                        </div>
                     </div>
 
                     <div class="form-group row">
@@ -18,16 +21,22 @@
                         <div class="col-sm-7">
                             <input type="number" class="form-control" id="rowCount" step="1" v-model.number="rows">
                         </div>
+                        <div class="error" v-show="rowCountError">
+                            Rows must be between 1 and 50.
+                        </div>
                     </div>
                     <div class="form-group row">
                         <label for="columnCount" class="col-sm-2 col-form-label px-0">Columns</label>
                         <div class="col-sm-7">
                             <input type="number" class="form-control" id="columnCount" step="1" v-model.number="cols">
                         </div>
+                        <div class="error" v-show="colCountError">
+                            Cols must be between 1 and 50.
+                        </div>
                     </div>
                     <div class="form-group row">
                         <div class="col-sm-10">
-                            <button id="initialize" class="btn btn-primary" :disabled="!inputsAreValid" @click="initialize">Initialize</button>
+                            <button id="initialize" class="btn btn-primary" :disabled="!inputsAreValid" @click="initialize">Reset</button>
                         </div>
                     </div>
                 </div>
@@ -45,14 +54,15 @@
                     <div class="alert alert-primary" role="alert">
                         <h4 class="alert-heading">Hint:</h4>
                         <p>You can draw alive cells on left mouse click and dead cells on left mouse click. You can only do this before your first move.</p>
+                        
                     </div>
                 </div>
                 <div class="row mx-a" @mousedown.left="activateDraw(1)" @mousedown.right="activateDraw(0)" @mouseup="deactivateDraw" @mouseleave="deactivateDraw">
                     <div class="d-inline" v-for="(row, ridx) in grid" :key="ridx">
                         <div v-bind:class="[ grid[ridx][cidx] === 1 ? 'cell cell-alive' : 'cell cell-dead' ]" v-for="(value, cidx) in row" :key="cidx" 
-                                @mouseover="draw(ridx, cidx, $event)" 
-                                @click.left="pointDraw(ridx, cidx, 1, $event)"
-                                @click.right="pointDraw(ridx, cidx, 0, $event)">
+                                @mouseover="draw(ridx, cidx)" 
+                                @click.left="pointDraw(ridx, cidx, 1)"
+                                @click.right="pointDraw(ridx, cidx, 0)">
                         </div>
                     </div>
                 </div>
@@ -144,7 +154,7 @@ export default {
           this.drawIsActive = false;
       },
 
-      draw: function(row, col, event) {
+      draw(row, col) {
           if (this.step === 0 && this.drawIsActive) {
               const alteredGrid = [...this.grid];
               alteredGrid[row][col] = this.drawValue;
@@ -153,7 +163,7 @@ export default {
           }
       },
 
-    pointDraw: function(row, col, val, event) {
+    pointDraw(row, col, val) {
           if (this.step === 0) {
               const alteredGrid = [...this.grid];
               alteredGrid[row][col] = val;
@@ -163,24 +173,35 @@ export default {
       }
   },
   computed: {
-      inputsAreValid() {
-            if(this.alivePercentage === undefined 
+      percentageError() {
+          return this.alivePercentage === undefined 
                 || this.alivePercentage < 0 
-                || this.alivePercentage > 1) {
+                || this.alivePercentage > 1;
+      },
 
-                return false;
-            }
-
-            if(this.rows === undefined 
+      rowCountError() {
+          return this.rows === undefined 
                 || this.rows < 1 
-                || this.rows > 50) {
+                || this.rows > 50;
+      },
+
+      colCountError() {
+          return this.cols === undefined 
+                || this.cols < 1 
+                || this.cols > 50;
+      },
+
+      inputsAreValid() {
+            if(this.percentageError) {
+                return false;
+            }
+
+            if(this.rowCountError) {
 
                 return false;
             }
 
-            if(this.cols === undefined 
-                || this.cols < 1 
-                || this.cols > 50) {
+            if(this.colCountError) {
 
                 return false;
             }
@@ -206,5 +227,9 @@ export default {
 
     .cell-alive {
         background-color: green;
+    }
+
+    .error {
+        color: red;
     }
 </style>
