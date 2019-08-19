@@ -9,25 +9,25 @@
                     <div class="form-group row">
                         <label for="alivePercentage" class="col-sm-2 col-form-label px-0">Alive %</label>
                         <div class="col-sm-7">
-                            <input type="number" class="form-control" id="alivePercentage" step="0.05" min="0.05" max="1.0" v-model="alivePercentage" >
+                            <input type="number" class="form-control" id="alivePercentage" step="0.05" min="0.05" max="1.0" v-model.number="alivePercentage" >
                         </div>
                     </div>
 
                     <div class="form-group row">
                         <label for="rowCount" class="col-sm-2 col-form-label px-0">Rows</label>
                         <div class="col-sm-7">
-                            <input type="number" class="form-control" id="rowCount" step="1" v-model="rows">
+                            <input type="number" class="form-control" id="rowCount" step="1" v-model.number="rows">
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="columnCount" class="col-sm-2 col-form-label px-0">Columns</label>
                         <div class="col-sm-7">
-                            <input type="number" class="form-control" id="columnCount" step="1" v-model="cols">
+                            <input type="number" class="form-control" id="columnCount" step="1" v-model.number="cols">
                         </div>
                     </div>
                     <div class="form-group row">
                         <div class="col-sm-10">
-                            <button id="initialize" class="btn btn-primary" @click="initialize">Initialize</button>
+                            <button id="initialize" class="btn btn-primary" :disabled="!inputsAreValid" @click="initialize">Initialize</button>
                         </div>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
                     <label class="form-check-label" for="stepCount">
                         Step: {{step}}
                     </label>
-                    <button class="btn btn-primary ml-2" @click="nextStep">Next Step</button>
+                    <button class="btn btn-primary ml-2" :disabled="!inputsAreValid" @click="nextStep">Next Step</button>
                 </div>
             </div>
             <div class="col-md-6">
@@ -56,16 +56,13 @@
 <script>
 import axios from 'axios'
 
-function initGrid(alive="0.25", r=20, c=20) {
+function initGrid(alivePercentage=0.25, rows=20, cols=20) {
     const grid = []
-    const alivePercentage = parseFloat(alive)
-    const rows = parseInt(r,10);
-    const cols = parseInt(c,10);
 
     for(let row = 0; row < rows; row++) {
         const newRow = [];
         for(let col = 0; col < cols; col++) {
-            const val = Math.random() < alive ? 1 : 0;
+            const val = Math.random() < alivePercentage ? 1 : 0;
             newRow.push(val);
         }
         grid.push(newRow);   
@@ -82,9 +79,8 @@ export default {
       const g = initGrid()
       return {
           step: 0,
-          history: [g],
           grid: g,
-          alivePercentage: 0.75,
+          alivePercentage: 0.25,
           rows: 20,
           cols: 20
       }
@@ -97,7 +93,6 @@ export default {
 
           }).then((response) => {
               const newGrid = response.data.grid;
-              this.history.push(newGrid);
               this.step = this.step + 1;
               this.grid = [];
 
@@ -108,19 +103,46 @@ export default {
                   }
                   this.grid.push(row);
               }
+          }).catch((err) => {
+              alert('Something went wrong: ', err)
           });
       },
       initialize() {
             const g = initGrid(this.alivePercentage, this.rows, this.cols)
             this.step = 0;
-            this.history = [g];
             this.grid = g;
+      }
+  },
+  computed: {
+      inputsAreValid() {
+            if(this.alivePercentage === undefined 
+                || this.alivePercentage < 0 
+                || this.alivePercentage > 1) {
+
+                return false;
+            }
+
+            if(this.rows === undefined 
+                || this.rows < 1 
+                || this.rows > 50) {
+
+                return false;
+            }
+
+            if(this.cols === undefined 
+                || this.cols < 1 
+                || this.cols > 50) {
+
+                return false;
+            }
+
+            return true;
       }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
 <style scoped>
 
     .cell {
