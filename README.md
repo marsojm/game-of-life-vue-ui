@@ -1,5 +1,7 @@
 # game-of-life-ui
 
+Vue.js UI for game of life. You can try it here: https://marsojm.github.io/game-of-life-vue-ui/index.html
+
 ## Project setup
 ```
 npm install
