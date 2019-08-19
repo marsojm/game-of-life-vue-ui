@@ -9,7 +9,7 @@
                     <div class="form-group row">
                         <label for="alivePercentage" class="col-sm-2 col-form-label px-0">Alive %</label>
                         <div class="col-sm-7">
-                            <input type="number" class="form-control" id="alivePercentage" step="0.05" min="0.05" max="1.0" v-model.number="alivePercentage" >
+                            <input type="number" class="form-control" id="alivePercentage" step="0.05" min="0.00" max="1.0" v-model.number="alivePercentage" >
                         </div>
                     </div>
 
@@ -41,9 +41,18 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="row mx-a">
+                <div class="row my-1" v-show="step === 0">
+                    <div class="alert alert-primary" role="alert">
+                        <h4 class="alert-heading">Hint:</h4>
+                        <p>You can draw alive cells on left mouse click and dead cells on left mouse click. You can only do this before your first move.</p>
+                    </div>
+                </div>
+                <div class="row mx-a" @mousedown.left="activateDraw(1)" @mousedown.right="activateDraw(0)" @mouseup="deactivateDraw" @mouseleave="deactivateDraw">
                     <div class="d-inline" v-for="(row, ridx) in grid" :key="ridx">
-                        <div v-bind:class="[ grid[ridx][cidx] === 1 ? 'cell cell-alive' : 'cell cell-dead' ]" v-for="(value, cidx) in row" :key="cidx">
+                        <div v-bind:class="[ grid[ridx][cidx] === 1 ? 'cell cell-alive' : 'cell cell-dead' ]" v-for="(value, cidx) in row" :key="cidx" 
+                                @mouseover="draw(ridx, cidx, $event)" 
+                                @click.left="pointDraw(ridx, cidx, 1, $event)"
+                                @click.right="pointDraw(ridx, cidx, 0, $event)">
                         </div>
                     </div>
                 </div>
@@ -82,12 +91,16 @@ export default {
           grid: g,
           alivePercentage: 0.25,
           rows: 20,
-          cols: 20
+          cols: 20,
+          drawIsActive: false,
+          drawValue: 1
       }
   },
 
   methods: {
       nextStep() {
+
+          const that = this;
           axios.post('http://localhost:8080/grid', {
               grid: this.grid 
 
@@ -96,21 +109,57 @@ export default {
               this.step = this.step + 1;
               this.grid = [];
 
-              for (let i = 0; i < newGrid.length; i++) {
-                  let row = []
-                  for (let j = 0; j < newGrid[i].length; j++) {
-                      row.push(newGrid[i][j]);
-                  }
-                  this.grid.push(row);
-              }
+              that.updateGrid(newGrid);
           }).catch((err) => {
               alert('Something went wrong: ', err)
           });
       },
+
       initialize() {
             const g = initGrid(this.alivePercentage, this.rows, this.cols)
             this.step = 0;
             this.grid = g;
+            this.drawIsActive = false;
+            this.drawValue = 1;
+      },
+
+      updateGrid(newGrid) {
+          this.grid = [];
+
+          for (let i = 0; i < newGrid.length; i++) {
+            let row = []
+            for (let j = 0; j < newGrid[i].length; j++) {
+                row.push(newGrid[i][j]);
+            }
+            this.grid.push(row);
+          }
+      },
+
+      activateDraw(val) {
+          this.drawIsActive = true;
+          this.drawValue = val;
+      },
+
+      deactivateDraw() {
+          this.drawIsActive = false;
+      },
+
+      draw: function(row, col, event) {
+          if (this.step === 0 && this.drawIsActive) {
+              const alteredGrid = [...this.grid];
+              alteredGrid[row][col] = this.drawValue;
+
+              this.updateGrid(alteredGrid);
+          }
+      },
+
+    pointDraw: function(row, col, val, event) {
+          if (this.step === 0) {
+              const alteredGrid = [...this.grid];
+              alteredGrid[row][col] = val;
+
+              this.updateGrid(alteredGrid);
+          }
       }
   },
   computed: {
