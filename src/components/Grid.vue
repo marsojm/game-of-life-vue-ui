@@ -52,8 +52,7 @@
             <div class="col-md-6">
                 <div class="row my-1" v-show="step === 0">
                     <div class="alert alert-primary" role="alert">
-                        <h4 class="alert-heading">Hint:</h4>
-                        <p>You can draw alive cells on left mouse click and dead cells on left mouse click. You can only do this before your first move.</p>
+                        <p><b>Hint:</b> You can draw alive cells on left mouse click and dead cells on right mouse click. You can only do this before your first move.</p>
                         
                     </div>
                 </div>
@@ -75,7 +74,7 @@
 <script>
 import axios from 'axios'
 
-function initGrid(alivePercentage=0.25, rows=20, cols=20) {
+function initGrid(alivePercentage=0.25, rows=15, cols=15) {
     const grid = []
 
     for(let row = 0; row < rows; row++) {
@@ -100,8 +99,8 @@ export default {
           step: 0,
           grid: g,
           alivePercentage: 0.25,
-          rows: 20,
-          cols: 20,
+          rows: 15,
+          cols: 15,
           drawIsActive: false,
           drawValue: 1
       }
