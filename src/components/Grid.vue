@@ -94,15 +94,15 @@ export default {
   props: {
   },
   data() {
-      const g = initGrid()
       return {
           step: 0,
-          grid: g,
+          grid: initGrid(0.25, 15, 15),
           alivePercentage: 0.25,
           rows: 15,
           cols: 15,
           drawIsActive: false,
-          drawValue: 1
+          drawValue: 1,
+          waitingServerResponse: false,
       }
   },
 
@@ -110,26 +110,27 @@ export default {
       nextStep() {
 
           const that = this;
-          axios.post('http://localhost:8080/grid', {
-              grid: this.grid 
+          that.waitingServerResponse = true;
 
+          axios.post('https://sleepy-hollows-99141.herokuapp.com/grid', {
+              grid: this.grid 
           }).then((response) => {
               const newGrid = response.data.grid;
               this.step = this.step + 1;
-              this.grid = [];
-
+              that.waitingServerResponse = false;
               that.updateGrid(newGrid);
           }).catch((err) => {
+              that.waitingServerResponse = false;
               alert('Something went wrong: ', err)
           });
       },
 
       initialize() {
-            const g = initGrid(this.alivePercentage, this.rows, this.cols)
             this.step = 0;
-            this.grid = g;
+            this.grid = initGrid(this.alivePercentage, this.rows, this.cols)
             this.drawIsActive = false;
             this.drawValue = 1;
+            this.waitingServerResponse = false;
       },
 
       updateGrid(newGrid) {
