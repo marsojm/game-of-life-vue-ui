@@ -115,7 +115,7 @@ export default {
           const that = this;
           that.waitingServerResponse = true;
 
-          axios.post('https://sleepy-hollows-99141.herokuapp.com/grid', {
+          axios.post(process.env.VUE_APP_URL, {
               grid: this.grid 
           }).then((response) => {
               const newGrid = response.data.grid;
