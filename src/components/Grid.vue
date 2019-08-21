@@ -46,7 +46,10 @@
                     <label class="form-check-label" for="stepCount">
                         Step: {{step}}
                     </label>
-                    <button class="btn btn-primary ml-2" :disabled="!inputsAreValid" @click="nextStep">Next Step</button>
+                    <button class="btn btn-primary ml-2" :disabled="!inputsAreValid || waitingServerResponse" @click="nextStep">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" v-show="waitingServerResponse"></span>
+                        Next Step
+                    </button>
                 </div>
             </div>
             <div class="col-md-6">
@@ -56,12 +59,12 @@
                         
                     </div>
                 </div>
-                <div class="row mx-a" @mousedown.left="activateDraw(1)" @mousedown.right="activateDraw(0)" @mouseup="deactivateDraw" @mouseleave="deactivateDraw">
+                <div class="row mx-a" @mousedown.left="activateDraw(1, $event)" @mousedown.right="activateDraw(0, $event)" @mouseup.prevent="deactivateDraw" @mouseleave="deactivateDraw">
                     <div class="d-inline" v-for="(row, ridx) in grid" :key="ridx">
                         <div v-bind:class="[ grid[ridx][cidx] === 1 ? 'cell cell-alive' : 'cell cell-dead' ]" v-for="(value, cidx) in row" :key="cidx" 
-                                @mouseover="draw(ridx, cidx)" 
-                                @click.left="pointDraw(ridx, cidx, 1)"
-                                @click.right="pointDraw(ridx, cidx, 0)">
+                                @mouseover="draw(ridx, cidx, $event)" 
+                                @click.left="pointDraw(ridx, cidx, 1, $event)"
+                                @click.right="pointDraw(ridx, cidx, 0, $event)">
                         </div>
                     </div>
                 </div>
@@ -145,16 +148,19 @@ export default {
           }
       },
 
-      activateDraw(val) {
+      activateDraw(val, event) {
+          
           this.drawIsActive = true;
           this.drawValue = val;
+          event.preventDefault();
       },
 
       deactivateDraw() {
           this.drawIsActive = false;
       },
 
-      draw(row, col) {
+      draw(row, col, event) {
+          event.preventDefault();
           if (this.step === 0 && this.drawIsActive) {
               const alteredGrid = [...this.grid];
               alteredGrid[row][col] = this.drawValue;
@@ -163,7 +169,8 @@ export default {
           }
       },
 
-    pointDraw(row, col, val) {
+    pointDraw(row, col, val, event) {
+          event.preventDefault();
           if (this.step === 0) {
               const alteredGrid = [...this.grid];
               alteredGrid[row][col] = val;
